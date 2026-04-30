@@ -1,0 +1,21 @@
+{
+  "name": "hiveorigin",
+  "version": "0.1.0",
+  "description": "HiveOrigin — Model-pedigree certificate surface. PROVABLE pillar: model provenance at training completion.",
+  "type": "module",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node --watch start.js"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.0",
+    "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT"
+}
