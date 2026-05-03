@@ -293,6 +293,14 @@ export function createServer() {
     res.json(openApiDoc);
   });
 
+  // ── /llms.txt (free) — LLM-friendly natural-language API guide ────────────
+  // Convention: https://llmstxt.org/
+  app.get('/llms.txt', async (_req, res) => {
+    const { LLMS_TXT } = await import('./llms.txt.js');
+    res.set('Content-Type', 'text/plain; charset=utf-8');
+    res.send(LLMS_TXT);
+  });
+
   // ── /v1/origin/pubkey (free — mounted before payment middleware) ───────────
   app.get('/v1/origin/pubkey', async (_req, res) => {
     const { getPubkeyInfo } = await import('./lib/sign.js');
