@@ -15,6 +15,7 @@ import x402Middleware from './middleware/x402.js';
 import mppMiddleware  from './middleware/mpp.js';
 import originRouter   from './routes/origin.js';
 import { certCount, subscriptionCount } from './routes/origin.js';
+import { smashProvMiddleware, getPubkeyInfo as getProvPubkeyInfo, verifyProvSig } from './lib/prov.js';
 
 const TREASURY    = '0x15184bf50b3d3f52b60434f8942b7d52f2eb436e';
 const USDC_BASE   = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
@@ -273,6 +274,21 @@ export function createServer() {
 
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
+
+  // ── smash.prov middleware (mount BEFORE paywall so it sees final responses) ─
+  app.use(smashProvMiddleware);
+
+  // ── /v1/prov routes (free, never paywalled) ────────────────────────────────
+  app.get('/v1/prov/pubkey', async (_req, res) => {
+    try { res.json(await getProvPubkeyInfo()); } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+  app.post('/v1/prov/verify', async (req, res) => {
+    try {
+      const { method, path: p, body_b64u = '', ts, sig_b64u } = req.body || {};
+      if (!method || !p || ts == null || !sig_b64u) return res.status(400).json({ error: 'missing fields' });
+      res.json(await verifyProvSig({ method, path: p, body_b64u, ts, sig_b64u }));
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
 
   // == Slippery-sticky discovery surfaces (free, never gated) ==
   // Doctrine: "no closed doors ever ... slippery sticky doors."

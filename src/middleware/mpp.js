@@ -54,10 +54,14 @@ const FREE_PATHS = new Set([
   '/health',
   '/openapi.json',
   '/v1/origin/pubkey',
+  '/v1/prov/pubkey',
+  '/v1/prov/verify',
 ]);
+const FREE_PREFIXES = ['/.well-known/', '/v1/prov/', '/v1/a2a/'];
 
 function isFreePath(path) {
-  return FREE_PATHS.has(path);
+  if (FREE_PATHS.has(path)) return true;
+  return FREE_PREFIXES.some(p => path.startsWith(p));
 }
 
 // ─── In-memory MPP payment cache (TTL 10 min) ────────────────────────────────
