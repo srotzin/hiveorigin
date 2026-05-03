@@ -274,6 +274,58 @@ export function createServer() {
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
 
+  // == Slippery-sticky discovery surfaces (free, never gated) ==
+  // Doctrine: "no closed doors ever ... slippery sticky doors."
+
+  app.get('/', (_req, res) => {
+    res.json({
+      name: 'hiveorigin',
+      what: 'Hive Civilization origin/provenance certificate service — Rosetta primitive',
+      for_agents: 'see /llms.txt and /openapi.json',
+      onboard: 'https://thehiveryiq.com/onboard.html',
+      paywall: 'x402 + mpp (see /llms.txt)',
+      contact: 'steve@thehiveryiq.com',
+    });
+  });
+
+  app.get('/robots.txt', (_req, res) => {
+    res.set('Content-Type', 'text/plain; charset=utf-8');
+    res.send('User-agent: *\nAllow: /\nSitemap: https://hiveorigin.onrender.com/sitemap.xml\n');
+  });
+
+  app.get('/sitemap.xml', (_req, res) => {
+    const base = 'https://hiveorigin.onrender.com';
+    const paths = ['/', '/health', '/openapi.json', '/llms.txt',
+                   '/.well-known/agent.json', '/v1/origin/pubkey'];
+    const urls = paths.map(p => `  <url><loc>${base}${p}</loc></url>`).join('\n');
+    res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
+  });
+
+  const FAVICON_PNG = Buffer.from(
+    '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489' +
+    '0000000d49444154789c626001000000050001' +
+    '0d0a2db40000000049454e44ae426082',
+    'hex',
+  );
+  app.get('/favicon.ico', (_req, res) => {
+    res.set('Content-Type', 'image/png');
+    res.send(FAVICON_PNG);
+  });
+
+  app.get('/.well-known/agent.json', (_req, res) => {
+    res.json({
+      name: 'hiveorigin',
+      description: 'Hive Civilization origin/provenance certificates — Rosetta primitive. Every byte tied to its agent.',
+      url: 'https://hiveorigin.onrender.com',
+      docs: 'https://hiveorigin.onrender.com/llms.txt',
+      openapi: 'https://hiveorigin.onrender.com/openapi.json',
+      capabilities: ['origin', 'provenance', 'certificate', 'rosetta', 'x402', 'mpp'],
+      contact: 'steve@thehiveryiq.com',
+      onboard: 'https://thehiveryiq.com/onboard.html',
+    });
+  });
+
   // ── Health (free) ──────────────────────────────────────────────────────────
   app.get('/health', (_req, res) => {
     res.json({
@@ -319,11 +371,16 @@ export function createServer() {
   app.use('/v1/origin', originRouter);
 
   // ── 404 catch-all ─────────────────────────────────────────────────────────
-  app.use((_req, res) => {
-    res.status(404).json({
-      success: false,
-      error:   'Not found',
-      code:    'NOT_FOUND',
+  // Slippery catch-all — every miss is a lead, never a closed door.
+  app.use((req, res) => {
+    res.status(200).json({
+      hint: 'unknown_path',
+      you_asked_for: req.path,
+      try: ['/', '/health', '/llms.txt', '/openapi.json', '/.well-known/agent.json', '/v1/origin/pubkey'],
+      docs: 'https://hiveorigin.onrender.com/llms.txt',
+      onboard: 'https://thehiveryiq.com/onboard.html',
+      contact: 'steve@thehiveryiq.com',
+      doctrine: 'slippery-sticky — every door 200s, every miss is a lead',
     });
   });
 
